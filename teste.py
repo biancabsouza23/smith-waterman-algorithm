@@ -12,8 +12,8 @@ from tkinter import filedialog
 
 
 #metodo que le uma celula especifica de uma planilha xlsx 
-def ler_celula():
-    nome_arq_xlsx = '8.Atividade.Anexo.Ribossomo.xlsx'
+def ler_celula1():
+    nome_arq_xlsx = '4.Atividade.Anexo.Ribossomo.xlsx'
     nome_planilha = 'RNA.sequencias'
     numero_aluno = int(linha_entry.get()) - 1
     nome_coluna = 'RNA'
@@ -25,6 +25,21 @@ def ler_celula():
         resultado.config(text=f"Resultado: Tradução concluída")
     except Exception as e:
         resultado.config(text=f"Ocorreu um erro: {e}")
+
+
+def ler_celula(aluno_numero, disciplina_selecionada):
+    # aluno_numero = linha_entry.get()
+    # disciplina_selecionada = disciplina_var.get()
+
+    # Comportamento baseado na opção selecionada
+    if disciplina_selecionada == "Biologia":
+        # Lógica específica para a disciplina de Biologia
+        resultado["text"] = "Resultado para Aluno {} na disciplina de Biologia".format(aluno_numero)
+    elif disciplina_selecionada == "Bioinformática":
+        # Lógica específica para a disciplina de Bioinformática
+        resultado["text"] = "Resultado para Aluno {} na disciplina de Bioinformática".format(aluno_numero)
+    else:
+        resultado["text"] = "Selecione uma disciplina antes de executar."
 
 #metodo que traduz as bases RNA em proteinas num arquivo txt
 def traducao(string):
@@ -87,24 +102,39 @@ def traducao2(string):
 
 # Configuração da janela principal
 root = tk.Tk()
-root.title("Tradução de RNA para proteína: ")
+root.title("Smith Waterman Algorithm: ")
 
 # Rótulos e botoes
+# Botões de seleção para escolher a disciplina
+disciplina_var = tk.StringVar()
+disciplina_var.set("Biologia")  # Define Biologia como a opção padrão
+
+bio_button = tk.Radiobutton(root, text="Biologia", variable=disciplina_var, value="Biologia")
+bio_button.pack()
+
+bioinfo_button = tk.Radiobutton(root, text="Bioinformática", variable=disciplina_var, value="Bioinformática")
+bioinfo_button.pack()
+
 #leitura linha
 linha = tk.Label(root, text="Número do Aluno:")
 linha.pack()
 linha_entry = tk.Entry(root)
 linha_entry.pack()
 
+
 # Botão para executar a tradução
-transc_button = tk.Button(root, text="Executar Tradução", command=ler_celula)
+transc_button = tk.Button(root, text="Executar Tradução", command=lambda:ler_celula(linha_entry.get(), disciplina_var.get()))
 transc_button.pack()
 
 # Rótulo para exibir o resultado
 resultado = tk.Label(root, text="")
 resultado.pack()
 
+
 root.mainloop()
+
+
+
 
 
 
