@@ -1,5 +1,5 @@
 ATCG
-ATUU
+TCG
 -2
 -1
 1
