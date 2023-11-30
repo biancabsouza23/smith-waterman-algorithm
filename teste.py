@@ -1,140 +1,105 @@
-# Universidade Federal do Piauí
-# Centro de Ciências da Natureza
-# Departamento de Computação
-# Prof. Dr. Luiz Claudio Demes da Mata Sousa
-# Aluno(a): Bianca Bastos de Souza
-# Atividade 02 - Ribossomo: Criando um ribossomo
-# Obs: Numero do Aluno = 5 
+# Thiago Oliveira da Silva
+#Algoritmo SmithWaterman de alinhamento de sequências 
 
-import pandas as pd
-import tkinter as tk
-from tkinter import filedialog
+import numpy as np
+import re 
 
+arquivo = open('input.txt','r')
+readArquivo = arquivo.read()
+sequencia = re.findall('[A-Z]+', readArquivo)
 
-#metodo que le uma celula especifica de uma planilha xlsx 
-def ler_celula1():
-    nome_arq_xlsx = '4.Atividade.Anexo.Ribossomo.xlsx'
-    nome_planilha = 'RNA.sequencias'
-    numero_aluno = int(linha_entry.get()) - 1
-    nome_coluna = 'RNA'
+seq1 = sequencia[0]
+seq2 = sequencia[1]
 
-    try:
-        df = pd.read_excel(nome_arq_xlsx, sheet_name=nome_planilha)
-        valor_celula = df.at[numero_aluno, nome_coluna]
-        traducao(valor_celula)  # Chama o método que realiza a tradução
-        resultado.config(text=f"Resultado: Tradução concluída")
-    except Exception as e:
-        resultado.config(text=f"Ocorreu um erro: {e}")
+gap = -3
+match = 2
+missmatch = -1
 
+tamanhoSeq1 = len(seq1)
+tamanhoSeq2 = len(seq2)
+print(f"Tamanho das sequencias: {tamanhoSeq1}, {tamanhoSeq2}")
 
-def ler_celula(aluno_numero, disciplina_selecionada):
-    # aluno_numero = linha_entry.get()
-    # disciplina_selecionada = disciplina_var.get()
+matriz = np.zeros((len(seq1) + 1, len(seq2) + 1))
+print(matriz)
+print(matriz.shape)
 
-    # Comportamento baseado na opção selecionada
-    if disciplina_selecionada == "Biologia":
-        # Lógica específica para a disciplina de Biologia
-        resultado["text"] = "Resultado para Aluno {} na disciplina de Biologia".format(aluno_numero)
-    elif disciplina_selecionada == "Bioinformática":
-        # Lógica específica para a disciplina de Bioinformática
-        resultado["text"] = "Resultado para Aluno {} na disciplina de Bioinformática".format(aluno_numero)
+for i, linhas in enumerate(matriz):
+    for j, elementos in enumerate(linhas):
+        if(i==0 and j ==0):
+            matriz[i][j] = matriz[i][j-1] +gap
+        if(i!=0 and j==0):
+            matriz[i][j] = matriz[i-1][j] +gap
+
+for i, linhas in enumerate(matriz):
+    for j, elementos in enumerate(linhas):
+        # print(f"Acessando -- {i}, {j}")
+        if(i == 0 or j == 0): continue
+        if i == len(matriz) or j == len(linhas): continue
+        if i > len(seq2): continue
+        if j > len(seq1): continue
+        # print(i, j, len(seq2), len(seq1))
+        if seq2[i - 1] == seq1[j - 1]:
+            score = match
+        else: 
+            score = missmatch
+        diagonal = matriz[i-1][j-1] + score
+        vertical = matriz[i-1][j] + gap
+        horizontal = matriz[i][j-1] + gap
+        matriz[i][j] = max(diagonal,vertical,horizontal)
+
+tamanhoLinha = len(matriz) -1
+tamanhoColuna = len(matriz[0]) -1
+
+sequencia1 = ""
+sequencia2 = ""
+
+while tamanhoLinha >= 1:
+    print(len(seq1), len(seq2), tamanhoColuna, tamanhoLinha)
+    if seq2[tamanhoColuna-1] == seq1[tamanhoLinha-1]:
+        sequencia1 += seq2[tamanhoColuna-1]
+        sequencia2 += seq2[tamanhoColuna-1]
+
+        tamanhoLinha -=1
+        tamanhoColuna -=1
+
     else:
-        resultado["text"] = "Selecione uma disciplina antes de executar."
+         
+        diagonal = matriz[tamanhoLinha-1][tamanhoColuna-1]
+        horizontal = matriz[tamanhoLinha][tamanhoColuna-1]
+        vertical = matriz[tamanhoLinha-1][tamanhoColuna]
 
-#metodo que traduz as bases RNA em proteinas num arquivo txt
-def traducao(string):
-    start = "AUG"
-    # Tamanho do bloco
-    tamanho_bloco = 3
+        if diagonal >= vertical and diagonal >=horizontal:
+            sequencia1 += seq1[tamanhoLinha-1]
+            sequencia2 += seq2[tamanhoColuna-1]
 
-    # Loop para percorrer a string de 3 em 3 caracteres
-    for i in range(0, len(string) - tamanho_bloco + 1, tamanho_bloco):
-        bloco = string[i:i + tamanho_bloco]
-        if bloco == start:
-            string2 = string[i:]
-            traducao2(string2)
-            return
+            tamanhoColuna -=1
+            tamanhoLinha -=1
         
-    #caso não haja start
-    nome_arquivo_txt_destino = 'aminoacidos.txt'
-    with open(nome_arquivo_txt_destino, 'w', encoding='utf-8') as arquivo_txt:
-        arquivo_txt.write("Nenhum aminoacido foi produzido!")
-            
+        elif horizontal >= diagonal and horizontal >= vertical:
+            sequencia1 += '-'
+            sequencia2 += seq1[tamanhoColuna-1]
 
-def traducao2(string):
-    dicionario = {
-    'AUG': 'MET(START)',
-    'UAA': 'OCRE(STOP)', 'UAG': 'AMBAR(STOP)', 'UGA': 'OPALA(STOP)',
-    'UUU':'FENIL', 'UUC': 'FENIL', 
-    'UUA': 'LEUC', 'UUG': 'LEUC', 'CUU': 'LEUC', 'CUC': 'LEUC', 'CUA': 'LEUC', 'CUG': 'LEUC',
-    'AUU': 'ISO', 'AUC': 'ISO', 'AUA': 'ISO', 
-    'GUU': 'VAL', 'GUC': 'VAL', 'GUA': 'VAL', 'GUG': 'VAL',
-    'UCU': 'SER', 'UCC': 'SER', 'UCA': 'SER', 'UCG': 'SER',
-    'CCU': 'PROL', 'CCC': 'PROL', 'CCA': 'PROL', 'CCG': 'PROL',
-    'ACU': 'TREO', 'ACC': 'TREO', 'ACA': 'TREO', 'ACG': 'TREO',
-    'GCU': 'ALA', 'GCC': 'ALA', 'GCA': 'ALA', 'GCG': 'ALA', 
-    'UAU': 'TIRO', 'UAC': 'TIRO',
-    'CAU': 'HISTI', 'CAC': 'HISTI',
-    'GLUT': 'CAA', 'CAG': 'GLUT',
-    'AAU': 'ASPAR', 'AAC': 'ASPAR',
-    'AAA': 'LIS', 'AAG': 'LIS',
-    'GAU': 'Ac.ASPART', 'GAC': 'Ac.ASPART', 'GAA': 'Ac.GLUT', 'GAG': 'Ac.GLUT',
-    'UGU': 'CIST', 'UGC': 'CIST', 
-    'UGG': 'TRIP', 
-    'CGU': 'ARGIN', 'CGC': 'ARGIN', 'CGA': 'ARGIN', 'CGG': 'ARGIN','AGA': 'ARGIN', 'AGG': 'ARGIN',
-    'AGU': 'SER', 'AGC': 'SER', 
-    'GGU': 'GLIC', 'GGC': 'GLIC', 'GGA': 'GLIC', 'GGG': 'GLIC'
-}
-    # Tamanho do bloco
-    tamanho_bloco = 3
-    nome_arquivo_txt_destino = 'aminoacidos.txt'
+            tamanhoColuna -=1
 
-    # Loop para percorrer a string de 3 em 3 caracteres
-    with open(nome_arquivo_txt_destino, 'w', encoding='utf-8') as arquivo_txt:
-        for i in range(0, len(string) - tamanho_bloco + 1, tamanho_bloco):
-            bloco = string[i:i + tamanho_bloco]
-            if bloco in dicionario:
-                arquivo_txt.write(dicionario[bloco])
-                if i + tamanho_bloco < len(string):
-                    arquivo_txt.write("--")
-                if bloco == "UAA" or  bloco == "UAG" or bloco == "UGA":
-                    break                
+        elif vertical>= diagonal and vertical >= horizontal:
+            sequencia1 += seq2[tamanhoLinha-1]
+            sequencia2 += '-'
 
-# Configuração da janela principal
-root = tk.Tk()
-root.title("Smith Waterman Algorithm: ")
+            tamanhoLinha -=1
+        
+if tamanhoLinha == 0 and tamanhoColuna >tamanhoLinha:
+    sequencia1 += '-'
+    sequencia2 += seq1[tamanhoLinha]
 
-# Rótulos e botoes
-# Botões de seleção para escolher a disciplina
-disciplina_var = tk.StringVar()
-disciplina_var.set("Biologia")  # Define Biologia como a opção padrão
+sequencia1 = sequencia1[::-1]
+sequencia2 = sequencia2[::-1]
 
-bio_button = tk.Radiobutton(root, text="Biologia", variable=disciplina_var, value="Biologia")
-bio_button.pack()
-
-bioinfo_button = tk.Radiobutton(root, text="Bioinformática", variable=disciplina_var, value="Bioinformática")
-bioinfo_button.pack()
-
-#leitura linha
-linha = tk.Label(root, text="Número do Aluno:")
-linha.pack()
-linha_entry = tk.Entry(root)
-linha_entry.pack()
-
-
-# Botão para executar a tradução
-transc_button = tk.Button(root, text="Executar Tradução", command=lambda:ler_celula(linha_entry.get(), disciplina_var.get()))
-transc_button.pack()
-
-# Rótulo para exibir o resultado
-resultado = tk.Label(root, text="")
-resultado.pack()
-
-
-root.mainloop()
-
-
-
-
-
-
+# escritas no arquivo output.txt
+arquivoSaida = open('output.txt','w')
+arquivoSaida.write(str(sequencia1)+'\n')
+arquivoSaida.write(str(sequencia2)+'\n')
+arquivoSaida.write('SCORE: '+str(matriz[len(matriz) -1][len(matriz[0]) -1]) + '\n')
+arquivoSaida.write('GAP: '+ str(gap) + '\n')
+arquivoSaida.write('MATCH: ' + str(match) + '\n')
+arquivoSaida.write('MISSMATCH: ' + str(missmatch))
+arquivoSaida.close()
