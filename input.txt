@@ -1,5 +1,5 @@
-ATCG
-TCG
+GCUGCCUU
+GUCGAC
 -2
 -1
 1
