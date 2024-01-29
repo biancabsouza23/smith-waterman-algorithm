@@ -8,8 +8,8 @@ arquivo = open('input.txt','r')
 readArquivo = arquivo.read()
 sequencia = re.findall('[A-Z]+', readArquivo)
 
-seq1 = sequencia[0]
-seq2 = sequencia[1]
+seq1 = "ATCG"
+seq2 = "TCG"
 
 gap = -3
 match = 2
